@@ -9,7 +9,7 @@ import yaml
 
 import pydoop.hdfs as phdfs
 
-import hadoop_galaxy.pathset as pathset
+from hadoop_galaxy.pathset import Pathset, FilePathset
 
 class HadoopToolRunner(object):
   """
@@ -55,28 +55,27 @@ class HadoopToolRunner(object):
     self.generic_opts = []
 
   def __str__(self):
-    return ' '.join(
+    return '\n\t'.join(
        (str(type(self)),
-        "executable:", self.executable,
-        "conf:", str(self.conf),
-        "input:", str(self.input_params),
-        "output:", self.output_str,
-        "opts:", str(self.generic_opts))
+        "executable: %s" % self.executable,
+        "input: %s"  % str(self.input_params),
+        "output: %s" % self.output_str,
+        "opts: %s"   % str(self.generic_opts))
       )
 
-  def set_input(self, pathset):
+  def set_input(self, pset):
     """
     Set the input paths for the Hadoop command.
     """
-    self.input_params = pathset.get_paths()
+    self.input_params = pset.get_paths()
 
-  def set_output(self, pathset):
+  def set_output(self, pset):
     """
     Set the output path for the Hadoop command.
     """
-    if len(pathset) != 1:
-      raise RuntimeError("Expecting an output pathset containing one path, but got %d" % len(pathset))
-    self.output_str = iter(pathset).next()
+    if len(pset) != 1:
+      raise RuntimeError("Expecting an output pathset containing one path, but got %d" % len(pset))
+    self.output_str = iter(pset).next()
 
   def parse_args(self, args_list):
     """
@@ -89,8 +88,6 @@ class HadoopToolRunner(object):
     """
     self.generic_opts = args_list
 
-  def _find_bin(program, env=None):
-      if 
   def command(self, env=None):
     """
     Returns the arguments array to run this Hadoop command.
@@ -162,8 +159,11 @@ class HadoopGalaxy(object):
         to it or modify it.
         """
         parser = argparse.ArgumentParser(description="Wrap Hadoop-based tools to run within Galaxy")
+        parser.add_argument('--input', metavar="InputPath", required=True,
+                help="Path to input pathset provided by Galaxy.")
         parser.add_argument('--input-format', metavar="InputFormat", help="Input format provided by Galaxy.")
-        parser.add_argument('--output', metavar="OutputPath", help="Output path provided by Galaxy")
+        parser.add_argument('--output', metavar="OutputPath", required=True,
+                help="Output path provided by Galaxy")
         parser.add_argument('--append-python-path', metavar="PATH",
                  help="Path to append to the PYTHONPATH before calling the executable")
         parser.add_argument('--output-dir', metavar="PATH",
@@ -241,7 +241,7 @@ class HadoopGalaxy(object):
         if options.output_dir:
             datapath = options.output_dir
         else:
-            datapath = os.path.join(options.output_dir, self.HadoopOutputDirName)
+            datapath = os.path.join(os.path.dirname(options.output), self.HadoopOutputDirName)
 
         p = os.path.join(datapath, suffix_path)
         self.log.info("Hadoop job data output path %s", p)
@@ -267,6 +267,9 @@ class HadoopGalaxy(object):
             self.conf = dict()
 
         self._set_hadoop_conf()
+
+        if options.remaining_args:
+            self._runner.parse_args(options.remaining_args)
 
         # If the configuration specifies a dict for 'tool_env' use it to override
         # environment variables
@@ -296,19 +299,18 @@ class HadoopGalaxy(object):
         output_pathset = FilePathset(self.gen_output_path(options))
 
         try:
-            self._runner.set_conf(self.conf)
             self._runner.set_input(input_pathset)
             self._runner.set_output(output_pathset)
-            self.log.debug("Executing: %s", runner)
+            self.log.debug("Executing: %s", self._runner)
             self._runner.execute(self.log, self._cmd_env)
             with open(options.output, 'w') as f:
                 output_pathset.write(f)
         except subprocess.CalledProcessError as e:
             self.log.exception(e)
             if e.returncode < 0:
-                msg = "%s was terminated by signal %d" % (options.tool, e.returncode)
+                msg = "%s was terminated by signal %d" % (options.executable, e.returncode)
             elif e.returncode > 0:
-                msg = "%s exit code: %d" % (options.tool, e.returncode)
+                msg = "%s exit code: %d" % (options.executable, e.returncode)
             self.log.critical(msg)
             raise RuntimeError(msg)
         except OSError as e:
