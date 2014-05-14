@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2012 CRS4.
+# Copyright (C) 2014 CRS4.
 #
 
 import glob
