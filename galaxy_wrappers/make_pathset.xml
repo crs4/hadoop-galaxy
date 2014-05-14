@@ -1,0 +1,45 @@
+<tool id="hadoop_galaxy_make_pathset" name="Make Pathset" version="0.1.0">
+  <description>Create a pathset for a set of files</description>
+
+  <command interpreter="python">
+      #if $paths.source == 'tool_input'
+        ## TODO: if possible, add --data-format from the input's data format
+        make_pathset --force-local $output_path $datapaths
+      #elif $paths.source == 'text_box'
+      make_pathset
+        #if $paths.filesystem_select == 'local'
+          --force-local
+        #end if
+        $output_path $datapaths
+      #else
+        #error
+      #end if
+  </command>
+
+  <inputs>
+    <conditional name="paths">
+        <param name="source" type="select" label="Path source">
+            <option value="tool_input">Tool input</option>
+            <option value="text_box">User input</option>
+        </param>
+        <when value="tool_input">
+            <param name="datapaths" label="A dataset" />
+        </when>
+        <when value="text_box">
+            <param name="filesystem_select" type="select" label="File system type" default="default">
+              <option value="default">Default</option>
+              <option value="local">Local FS</option>
+            </param>
+            <param name="datapaths" type="text" label="Paths or URIs" size="60" />
+        </when>
+    </conditional>
+  </inputs>
+
+  <outputs>
+    <data name="output_path" type="data" format="pathset" label="Pathset for $datapath" />
+  </outputs>
+
+  <stdio>
+    <exit_code range="1:" level="fatal" />
+  </stdio>
+</tool>

@@ -1,0 +1,28 @@
+<tool id="hadoop_galaxy_cat_paths" name="Cat paths" version="0.1.0">
+  <description>Concatenate all components of a pathset into a single file.</description>
+
+  <command interpreter="python">
+    cat_paths $input_pathset $output_path
+  </command>
+
+  <inputs>
+    <param name="input_pathset" type="data" format="pathset" label="Input pathset" />
+  </inputs>
+
+  <outputs>
+    <data name="output_path" type="data" label="Concatenated dataset $input_pathset.name" />
+  </outputs>
+
+  <stdio>
+    <exit_code range="1:" level="fatal" />
+  </stdio>
+
+  <help>
+    Datasets represented as pathsets can be split in a number of files.
+    This tool takes all of them and concatenates them into a single output file.
+
+    In your workflow, you'll need to explicitly set the appropriate data format on the
+    output dataset with an Action to "Change Datatype".
+  </help>
+
+</tool>
