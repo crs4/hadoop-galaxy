@@ -10,6 +10,8 @@ from urlparse import urlparse
 import hadoop_galaxy.pathset as pathset
 import pydoop.hdfs as phdfs
 
+_log = logging.getLogger('cat_paths')
+
 def link_file(src_url, dest_path):
     # Both source and destination should be on mounted file systems.
     u = urlparse(src_url)
@@ -19,13 +21,12 @@ def link_file(src_url, dest_path):
     except OSError:
         pass
     try:
-        logging.debug("hard linking %s to %s", u.path, dest_path)
+        _log.debug("hard linking %s to %s", u.path, dest_path)
         os.link(u.path, dest_path)
         return
     except OSError as e:
-       logging.info("failed to hard link %s (Reason: %s). Will copy.", u.path, str(e))
+       _log.info("failed to hard link %s (Reason: %s). Will copy.", u.path, str(e))
        raise
-
 
 def append_file(src_url, dest_fd):
     ten_mb = 10 * 2**20
@@ -40,22 +41,22 @@ def append_file(src_url, dest_fd):
     return n_bytes
 
 def append_dir(d, output):
-  """
-  Appends the contents of all files within directory d to the output.
-  The contents within the directory are ordered by name.
+    """
+    Appends the contents of all files within directory d to the output.
+    The contents within the directory are ordered by name.
 
-  Returns the number of bytes appended to the output.
-  """
-  contents = [ e for e in sorted(phdfs.ls(d)) if not os.path.basename(e).startswith('_') ]
-  logging.debug("Appending %s items from directory %s", len(contents), d)
-  n_bytes = 0
-  for c in contents:
-    if phdfs.path.isdir(c):
-      logging.debug("Recursively descending into %s", c)
-      n_bytes += append_dir(c, output)
-    else:
-      n_bytes += append_file(c, output)
-  return n_bytes
+    Returns the number of bytes appended to the output.
+    """
+    contents = [ e for e in sorted(phdfs.ls(d)) if not os.path.basename(e).startswith('_') ]
+    _log.debug("Appending %s items from directory %s", len(contents), d)
+    n_bytes = 0
+    for c in contents:
+        if phdfs.path.isdir(c):
+            _log.debug("Recursively descending into %s", c)
+            n_bytes += append_dir(c, output)
+        else:
+            n_bytes += append_file(c, output)
+    return n_bytes
 
 def open_file(path, mode='r'):
     u = urlparse(phdfs.path.abspath(path))
@@ -69,7 +70,7 @@ def perform_copy(src_pathset, output_path):
     n_bytes = 0
 
     def progress(i):
-      logging.info("Processed %s of %s (%0.1f %%). Copied %0.1f MB", i, total,
+      _log.info("Processed %s of %s (%0.1f %%). Copied %0.1f MB", i, total,
               100*(float(i) / total), float(n_bytes) / 2**20)
     progress(0)
 
@@ -77,7 +78,7 @@ def perform_copy(src_pathset, output_path):
     u = urlparse(first_src_uri)
 
     if len(src_pathset) == 1 and u.scheme == 'file' and os.path.isfile(u.path):
-        logging.debug("Pathset contains single local file")
+        _log.debug("Pathset contains single local file")
         try:
             link_file(first_src_uri, output_path)
             progress(total)
@@ -98,10 +99,10 @@ def perform_copy(src_pathset, output_path):
                 progress(idx + 1)
             progress(len(src_pathset))
         except StandardError as e:
-            logging.exception(e)
+            _log.exception(e)
             try:
                 if os.path.exists(output_path):
-                    logging.error('Trying to remove destination file %s', output_path)
+                    _log.error('Trying to remove destination file %s', output_path)
                     phdfs.rmr(output_path)
             except StandardError:
                 pass
@@ -109,8 +110,7 @@ def perform_copy(src_pathset, output_path):
     end_time = time.time()
     mb = float(n_bytes) / 2**20
     duration = end_time - start_time
-    logging.info("Wrote %0.1f MB in %d seconds (%0.1f MB/s)", mb, round(duration), mb / (min(0.1, duration)))
-
+    _log.info("Wrote %0.1f MB in %d seconds (%0.1f MB/s)", mb, round(duration), mb / (min(0.1, duration)))
 
 def parse_args(args):
     description = "Simple concatenate the data referenced by a pathset into a single file"
@@ -140,6 +140,6 @@ def main(args):
   try:
       perform_copy(pset, output_path)
   except StandardError as e:
-    logging.critical("IOError copying pathset to %s", output_path)
-    logging.exception(e)
+    _log.critical("IOError copying pathset to %s", output_path)
+    _log.exception(e)
     sys.exit(1)
