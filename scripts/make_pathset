@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import os
 import subprocess
 import sys
@@ -11,6 +12,9 @@ import pydoop.hdfs as phdfs
 from hadoop_galaxy.pathset import FilePathset
 
 ValidModes = ('default', 'local')
+
+def log(*args):
+    print >> sys.stderr, ' '.join(args)
 
 class Uri(object):
     def __init__(self, *args):
@@ -37,12 +41,6 @@ class Uri(object):
             url = self.path
         return url
 
-def usage_error(msg=None):
-    if msg:
-        print >> sys.stderr, msg
-    print >> sys.stderr, os.path.basename(sys.argv[0]), "[ %s ]" % ' | '.join(ValidModes), "DATAPATH", "OUTPUT_PATH"
-    sys.exit(1)
-
 def get_default_fs():
     root_ls = phdfs.ls('/')
     if root_ls:
@@ -53,7 +51,7 @@ def get_default_fs():
 
 def resolve_datapath(mode, datapath):
     """
-    Returns a full URL for datapath
+    Returns a full URI for datapath
     """
     u = Uri(urlparse.urlparse(datapath))
 
@@ -72,7 +70,12 @@ def resolve_datapath(mode, datapath):
     return u
 
 
-def get_paths(datapath_uri):
+def expand_paths(datapath_uri):
+    """
+    If a URI contains wildcards, this function expands them.
+
+    Returns a list of URIs.
+    """
     # simple case:  the path simply exists
     if phdfs.path.exists(datapath_uri.geturl()):
         return [datapath_uri.geturl()]
@@ -95,29 +98,56 @@ def get_paths(datapath_uri):
         # for each data line, run apply the 'process' function to transform it into a full URI
         return map(process, ls_output)
     except subprocess.CalledProcessError as e:
-        print >> sys.stderr, "Could not list datapath %s.  Please check whether it exists" % datapath_uri.geturl()
-        print >> sys.stderr, "Message:", str(e)
+        log("Could not list datapath %s.  Please check whether it exists" % datapath_uri.geturl())
+        log("Message:", str(e))
         sys.exit(1)
 
-if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        usage_error("Wrong number of arguments")
-    mode, datapath, output_path = sys.argv[1:]
+def parse_args(args=None):
+    parser = argparse.ArgumentParser(description="Make a pathset file from one or more paths")
+    parser.add_argument('--force-local', action='store_true', help="Force path to be local (i.e., URI starting with file://")
+    parser.add_argument('--data-format', help="Set the type of the pathset contents to this data type (e.g. 'fastq')")
+    parser.add_argument('output_path', help="Pathset file to write")
+    parser.add_argument('paths', nargs='*', help="Paths to be written to the pathset. Alternatively, provide the on stdin, one per line.")
+    return parser.parse_args(args)
 
-    # test the hadoop configuration
+def test_hadoop():
+    """
+    Test the hadoop configuration.
+    Calls sys.exit if test fails.
+    """
     cmd = [pydoop.hadoop_exec(), 'dfs', '-stat', 'file:///']
     try:
         subprocess.check_output(cmd)
     except subprocess.CalledProcessError as e:
-        print >> sys.stderr, "Error running hadoop program.    Please check your environment (tried %s)" % ' '.join(cmd)
-        print >> sys.stderr, "Message:", str(e)
+        log("Error running hadoop program.  Please check your environment (tried %s)" % ' '.join(cmd))
+        log("Message:", str(e))
         sys.exit(2)
 
-    if mode not in ValidModes:
-        usage_error("mode must be one of %s" % ', '.join(ValidModes))
+def do_work(options):
+    mode = 'local' if options.force_local else 'default'
+    output_path = options.output_path
+    data_format = options.data_format # may be None
 
-    uri = resolve_datapath(mode, datapath)
-    path_uris = get_paths(uri)
-    output_pathset = FilePathset(*path_uris)
+    if options.paths:
+        data_paths = options.paths
+    else:
+        log("reading paths from stdin")
+        data_paths = [ line.rstrip() for line in sys.stdin ]
+    log("read %s paths" % len(data_paths))
+
+    # this is the real work
+    uris = [ resolve_datapath(mode, p) for p in data_paths ]
+    expanded_uris = [ u for wild in uris for u in expand_paths(wild) ]
+    output_pathset = FilePathset(*expanded_uris)
+    output_pathset.set_datatype(data_format)
     with open(output_path, 'w') as f:
         output_pathset.write(f)
+
+def main(args=None):
+    args = args or sys.argv[1:]
+    options = parse_args(args)
+    test_hadoop() # calls sys.exit if test fails
+    do_work(options)
+
+if __name__ == "__main__":
+    main()
