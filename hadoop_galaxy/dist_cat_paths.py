@@ -3,7 +3,6 @@
 import argparse
 import logging
 import os
-import sys
 import time
 from urlparse import urlparse
 from uuid import uuid4
@@ -297,7 +296,6 @@ class DistCatPaths(object):
             self._clean_up(work_dir)
 
 def main(args):
-    logging.basicConfig(level=logging.DEBUG)
     input_pathset, output_file = parse_args(args)
     driver = DistCatPaths()
     driver.set_src_pathset(input_pathset)
@@ -311,6 +309,3 @@ def main(args):
     duration = end_time - start_time
     mb = sum(i.size for i in driver.src_paths) / float(2**20)
     driver.log.info("Wrote %0.1f MB in %d seconds (%0.1f MB/s)", mb, round(duration), mb / (min(0.1, duration)))
-
-if __name__ == '__main__':
-    main(sys.argv[1:])
