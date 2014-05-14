@@ -1,10 +1,10 @@
 # BEGIN_COPYRIGHT
-# 
+#
 # Copyright (C) 2014 CRS4.
-# 
+#
 # This file is part of hadoop-galaxy, released under the terms of the BSD
 # 3-Clause License <http://opensource.org/licenses/BSD-3-Clause>.
-# 
+#
 # END_COPYRIGHT
 
 import argparse
