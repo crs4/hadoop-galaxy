@@ -1,0 +1,13 @@
+#!/bin/bash
+
+die() {
+    echo $1 1>&2
+    exit 1
+}
+
+NAME="hadoop-galaxy"
+
+type copyrighter >/dev/null 2>&1 || die "ERROR: copyrighter not found"
+
+copyrighter -r --keep-tags -p "${NAME}" -n notice_template.txt CRS4 \
+    -y 2014 --end-year $(date +'%Y') --exclude-dirs=".svn,.git,.hg" .
