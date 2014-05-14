@@ -101,7 +101,7 @@ class FilePathset(Pathset):
     super(FilePathset, self).__init__(*pathlist)
 
   def __format_header(self):
-    return '\t'.join((self.Magic, ':'.join( (self.VersionTag, self.Version) ), ':'.join( (self.DataTypeTag, self.datatype) )))
+    return '\t'.join((self.Magic, ':'.join( (self.VersionTag, self.Version) ), ':'.join( (self.DataTypeTag, self.datatype or self.Unknown) )))
 
   def __parse_header(self, header_line):
     if not header_line.startswith(self.Magic):
