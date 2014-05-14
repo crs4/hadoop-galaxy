@@ -335,7 +335,3 @@ def main(args=None):
         raise ValueError("You need to specify the program to run with the --executable option")
     hg.runner = HadoopToolRunner(options.executable)
     hg.run(options)
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    main(sys.argv[1:])
