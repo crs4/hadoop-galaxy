@@ -98,7 +98,7 @@ class FilePathset(Pathset):
     return retval
 
   def __init__(self, *pathlist):
-    super(type(self), self).__init__(*pathlist)
+    super(FilePathset, self).__init__(*pathlist)
 
   def __format_header(self):
     return '\t'.join((self.Magic, ':'.join( (self.VersionTag, self.Version) ), ':'.join( (self.DataTypeTag, self.datatype) )))
