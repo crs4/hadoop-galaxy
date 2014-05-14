@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import logging
 import os
 import sys
@@ -116,26 +117,28 @@ def mapper(_, line, writer):
             writer.status(statusline())
     writer.count('files catted', 1)
 
-def usage_error(msg=None):
-  if msg:
-    print >> sys.stderr, msg
-  print >> sys.stderr, os.path.basename(__file__), "PATHSET OUTPUT"
-  sys.exit(1)
-
-
 def parse_args(args):
-    if len(args) != 2:
-        usage_error()
-    input_pathset, output_file = args
+    description = "Use Hadoop to concatenate the data referenced by a pathset into a\n" + \
+    "single file on a parallel shared file system"
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('input_pathset', help="Input pathset")
+    parser.add_argument('output_file',
+            help="Output file. MUST be on a mounted file system accessible from all Hadoop nodes")
+    options = parser.parse_args(args)
+
+    if not os.access(options.input_pathset, os.R_OK):
+        parser.error("Can't read specified input path %s" % options.input_pathset)
+
+    output_file = options.output_file
     u = urlparse(output_file)
     if u.scheme == 'file' or not u.scheme:
         # if the output path isn't specified as a full URI we prefer
         # it to be on the local file system
         output_file = 'file://' + os.path.abspath(u.path)
     else:
-        usage_error("Output path must be on locally mounted file system")
+        parser.error("Output path must be on locally mounted file system")
 
-    return input_pathset, output_file
+    return options.input_pathset, output_file
 
 class _PathInfo(object):
     def __init__(self, path, size):
