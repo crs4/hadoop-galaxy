@@ -2,44 +2,52 @@
   <description>Create a pathset for a set of files</description>
 
   <command interpreter="python">
-      #if $paths.source == 'tool_input'
-          make_pathset --force-local --data-format $datapaths.ext $output_path $datapaths
-      #elif $paths.source == 'text_box'
-          make_pathset
-            #if $paths.filesystem_select == 'local'
-              --force-local
-            #end if
-            --data-format $data_format $output_path $datapaths
-      #else
-          #error
+    #if $paths.source == 'tool_input'
+      make_pathset --force-local --data-format $paths.datapaths.ext $output_path $paths.datapaths
+    #elif $paths.source == 'text_box'
+      make_pathset
+      #if $paths.filesystem_select == 'local'
+        --force-local
       #end if
+      #if $paths.data_format
+        --data-format "$paths.data_format"
+      #end if
+      $output_path "$paths.datapaths"
+    #else
+      #error
+    #end if
   </command>
 
   <inputs>
     <conditional name="paths">
-        <param name="source" type="select" label="Path source">
-            <option value="tool_input">Tool input</option>
-            <option value="text_box">User input</option>
+      <param name="source" type="select" label="Path source">
+        <option value="tool_input">Tool input</option>
+        <option value="text_box">User input</option>
+      </param>
+      <when value="tool_input">
+        <param name="datapaths" type="data" label="A dataset in any format" />
+      </when>
+      <when value="text_box">
+        <param name="filesystem_select" type="select" label="File system type">
+          <option value="default">Default</option>
+          <option value="local">Local FS</option>
         </param>
-        <when value="tool_input">
-            <param name="datapaths" label="A dataset" />
-        </when>
-        <when value="text_box">
-            <param name="filesystem_select" type="select" label="File system type" default="default">
-              <option value="default">Default</option>
-              <option value="local">Local FS</option>
-            </param>
-            <param name="datapaths" type="text" label="Paths or URIs" size="60" />
-            <param name="data_format" type="text" label="Extension representing data format" size="20" />
-        </when>
+        <param name="datapaths" type="text" label="Paths or URIs" size="60">
+          <validator type="empty_field" />
+        </param>
+        <param name="data_format" type="text" label="Extension representing data format" size="20" />
+      </when>
     </conditional>
   </inputs>
 
   <outputs>
-    <data name="output_path" type="data" format="pathset" label="Pathset for $datapath" />
+    <data name="output_path" format="pathset" />
   </outputs>
 
   <stdio>
     <exit_code range="1:" level="fatal" />
   </stdio>
+
+  <help>
+  </help>
 </tool>

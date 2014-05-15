@@ -3,7 +3,7 @@
 
   <command interpreter="python">
       split_pathset '$criteria_expr'
-      #if $anchor_end == 'true'
+      #if $anchor_end
           --anchor-end
       #end if
       --expand-levels $expand_levels
@@ -12,18 +12,23 @@
 
   <inputs>
     <param name="criteria_expr" type="text" label="Regular expression criteria" />
+      <validator type="empty_field" />
+    </param>
     <param name="anchor_end" type="boolean"
-      default="false"
+      checked="false"
       label="Anchor expression and the end of the string (like $)"
-      truevalue="true"
       />
     <param name="expand_levels" type="integer"
       value="0"
       label="Expand paths by at least this many levels before applying criteria"
       />
     <param name="input_pathset" type="data" format="pathset" label="Input pathset" />
-    <param name="match_name" type="text" label="Name of dataset matching criteria" default="match" />
-    <param name="no_match_name" type="text" label="Name of dataset not matching criteria" default="no_match" />
+    <param name="match_name" type="text" value="match" label="Name of dataset matching criteria">
+      <validator type="empty_field" />
+    </param>
+    <param name="no_match_name" type="text" value="no_match" label="Name of dataset not matching criteria">
+      <validator type="empty_field" />
+    </param>
   </inputs>
 
   <outputs>

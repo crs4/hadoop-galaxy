@@ -10,7 +10,7 @@
   </inputs>
 
   <outputs>
-    <data name="output_path" type="data" label="Concatenated dataset $input_pathset.name" />
+    <data name="output_path" format="data" label="Concatenated dataset $input_pathset.name" />
   </outputs>
 
   <stdio>
@@ -24,5 +24,4 @@
     In your workflow, you'll need to explicitly set the appropriate data format on the
     output dataset with an Action to "Change Datatype".
   </help>
-
 </tool>
