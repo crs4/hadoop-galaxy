@@ -1,0 +1,51 @@
+<tool id="hadoop_galaxy_split_pathset" name="Split pathset" version="0.1.0">
+  <description>Split a pathset according to a regular expression criteria</description>
+
+  <command interpreter="python">
+      split_pathset '$criteria_expr'
+      #if $anchor_end == 'true'
+          --anchor-end
+      #end if
+      --expand-levels $expand_levels
+      $input_pathset $output_true $output_false
+  </command>
+
+  <inputs>
+    <param name="criteria_expr" type="text" label="Regular expression criteria" />
+    <param name="anchor_end" type="boolean"
+      default="false"
+      label="Anchor expression and the end of the string (like $)"
+      truevalue="true"
+      />
+    <param name="expand_levels" type="integer"
+      value="0"
+      label="Expand paths by at least this many levels before applying criteria"
+      />
+    <param name="input_pathset" type="data" format="pathset" label="Input pathset" />
+    <param name="match_name" type="text" label="Name of dataset matching criteria" default="match" />
+    <param name="no_match_name" type="text" label="Name of dataset not matching criteria" default="no_match" />
+  </inputs>
+
+  <outputs>
+    <data name="output_true" type="data" format="pathset" label="$match_name" />
+    <data name="output_false" type="data" format="pathset" label="$no_match_name" />
+  </outputs>
+
+  <stdio>
+    <exit_code range="1:" level="fatal" />
+  </stdio>
+
+  <help>
+    Splits a pathset according to a regular expression.
+
+    You can have the tool expand the paths in the pathset by a certain number
+    of levels prior to testing whether it matches the regular expression.
+
+
+    **Note**: you can't use '$' in your regular expression. To anchor the
+    expression to the end of the path use the checkbox.
+
+
+    *Note*: the regular expression must match the path from its beginning.
+  </help>
+</tool>
