@@ -37,7 +37,7 @@ def parse_args(args=None):
     parser.add_argument('-a', '--anchor-end', action="store_true",
             help="If set, the regular expression must match at end of the path (like appending '$')")
 
-    parser.add_argument('-e', '--expand-levels', type=int, default=0,
+    parser.add_argument('-e', '--expand-levels', metavar="N", type=int, default=0,
             help="Number of levels to descent into path (Default: 0)")
     parser.add_argument('expression', help="Regular expression to apply as a test")
     parser.add_argument('input_pathset', help="Input pathset file")
@@ -112,6 +112,3 @@ def main(args=None):
         match_pathset.write(f)
     with open(no_match_pathset, 'w') as f:
         no_match_pathset.write(f)
-
-if __name__ == '__main__':
-    main()
