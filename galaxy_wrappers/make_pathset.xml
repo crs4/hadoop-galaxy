@@ -3,16 +3,15 @@
 
   <command interpreter="python">
       #if $paths.source == 'tool_input'
-        ## TODO: if possible, add --data-format from the input's data format
-        make_pathset --force-local $output_path $datapaths
+          make_pathset --force-local --data-format $datapaths.ext $output_path $datapaths
       #elif $paths.source == 'text_box'
-      make_pathset
-        #if $paths.filesystem_select == 'local'
-          --force-local
-        #end if
-        $output_path $datapaths
+          make_pathset
+            #if $paths.filesystem_select == 'local'
+              --force-local
+            #end if
+            --data-format $data_format $output_path $datapaths
       #else
-        #error
+          #error
       #end if
   </command>
 
@@ -31,6 +30,7 @@
               <option value="local">Local FS</option>
             </param>
             <param name="datapaths" type="text" label="Paths or URIs" size="60" />
+            <param name="data_format" type="text" label="Extension representing data format" size="20" />
         </when>
     </conditional>
   </inputs>
