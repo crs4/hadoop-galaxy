@@ -17,6 +17,7 @@ import urlparse
 import pydoop
 import pydoop.hdfs as phdfs
 
+from hadoop_galaxy import log
 from hadoop_galaxy.pathset import FilePathset
 
 ValidModes = ('default', 'local')
@@ -138,9 +139,9 @@ def do_work(options):
     if options.paths:
         data_paths = options.paths
     else:
-        log("reading paths from stdin")
+        log.info("reading paths from stdin")
         data_paths = [ line.rstrip() for line in sys.stdin ]
-    log("read %s paths" % len(data_paths))
+    log.info("read %s paths", len(data_paths))
 
     # this is the real work
     uris = [ resolve_datapath(mode, p) for p in data_paths ]

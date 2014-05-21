@@ -19,6 +19,8 @@ import pydoop.hdfs as phdfs
 
 from hadoop_galaxy.pathset import Pathset, FilePathset
 
+log = logging.getLogger('HadoopGalaxy')
+
 class HadoopToolRunner(object):
   """
   Implements the logic necessary to run a Hadoop-based tool from
@@ -133,7 +135,7 @@ class HadoopToolRunner(object):
     logging.getLogger(self.__class__.__name__).debug("Found tool: %s", full_path)
     return [full_path] + self.generic_opts + self.input_params + [self.output_str]
 
-  def execute(self, log, env=None):
+  def execute(self, logger, env=None):
     """
     Executes the command.
 
@@ -141,18 +143,18 @@ class HadoopToolRunner(object):
     the command.  If provided, the specified `env` will be used.
     """
     cmd = self.command(env)
-    log.debug("attempting to remove output path %s", self.output_str)
+    logger.debug("attempting to remove output path %s", self.output_str)
     try:
       phdfs.rmr(self.output_str)
     except IOError as e:
-      log.warning(e)
+      logger.warning(e)
 
     if not phdfs.path.exists(phdfs.path.dirname(self.output_str)):
       phdfs.mkdir(phdfs.path.dirname(self.output_str))
-      log.debug("Created parent of output directory")
+      logger.debug("Created parent of output directory")
 
-    log.info("Executing command: %s", cmd)
-    log.debug("PATH: %s", (env or os.environ).get('PATH'))
+    logger.info("Executing command: %s", cmd)
+    logger.debug("PATH: %s", (env or os.environ).get('PATH'))
     subprocess.check_call(cmd, env=env)
 
 
@@ -191,7 +193,6 @@ class HadoopGalaxy(object):
         return options
 
     def __init__(self):
-        self.log = logging.getLogger('HadoopGalaxy')
         self.conf = dict()
         self._runner = None
         self._cmd_env = dict()
@@ -252,24 +253,24 @@ class HadoopGalaxy(object):
             datapath = os.path.join(os.path.dirname(options.output), self.HadoopOutputDirName)
 
         p = os.path.join(datapath, suffix_path)
-        self.log.info("Hadoop job data output path %s", p)
+        log.info("Hadoop job data output path %s", p)
         return p
 
     def _configure_for_job(self, options):
         self._cmd_env = copy.copy(os.environ)
         if options.conf:
-            self.log.debug("loading config from %s", options.conf)
+            log.debug("loading config from %s", options.conf)
             try:
                 with open(options.conf) as f:
                     self.conf = yaml.load(f)
-                self.log.debug("loaded conf: %s", self.conf)
+                log.debug("loaded conf: %s", self.conf)
             except IOError as e:
-              self.log.critical("Couldn't read the specified configuration from %s", options.conf)
-              self.log.exception(e)
+              log.critical("Couldn't read the specified configuration from %s", options.conf)
+              log.exception(e)
               sys.exit(1)
             except yaml.YAMLError as e:
-              self.log.critical("Error parsing configuration file %s", options.conf)
-              self.log.exception(e)
+              log.critical("Error parsing configuration file %s", options.conf)
+              log.exception(e)
               raise
         else:
             self.conf = dict()
@@ -283,25 +284,25 @@ class HadoopGalaxy(object):
         # environment variables
         tool_env = self.conf.get('tool_env')
         if tool_env:
-            self.log.debug("Overriding environment variables from configuration")
+            log.debug("Overriding environment variables from configuration")
             for k, v in tool_env.iteritems():
-                self.log.debug("env[%s] = %s", k, v)
+                log.debug("env[%s] = %s", k, v)
                 self._cmd_env[k] = v
 
-        if self.log.isEnabledFor(logging.INFO):
-            self.log.info("Hadoop settings:")
+        if log.isEnabledFor(logging.INFO):
+            log.info("Hadoop settings:")
             for k, v in self._cmd_env.iteritems():
                 if k.startswith("HADOOP"):
-                    self.log.info("%s = %s", k, v)
+                    log.info("%s = %s", k, v)
 
     def run(self, options):
-        self.log.debug("options: %s", options)
+        log.debug("options: %s", options)
         self._configure_for_job(options)
 
         # load input pathset
         with open(options.input) as f:
             input_pathset = FilePathset.from_file(f)
-            self.log.debug("Read input pathset: %s", input_pathset)
+            log.debug("Read input pathset: %s", input_pathset)
 
         # new pathset with a single output path
         output_pathset = FilePathset(self.gen_output_path(options))
@@ -309,21 +310,21 @@ class HadoopGalaxy(object):
         try:
             self._runner.set_input(input_pathset)
             self._runner.set_output(output_pathset)
-            self.log.debug("Executing: %s", self._runner)
-            self._runner.execute(self.log, self._cmd_env)
+            log.debug("Executing: %s", self._runner)
+            self._runner.execute(log, self._cmd_env)
             with open(options.output, 'w') as f:
                 output_pathset.write(f)
         except subprocess.CalledProcessError as e:
-            self.log.exception(e)
+            log.exception(e)
             if e.returncode < 0:
                 msg = "%s was terminated by signal %d" % (options.executable, e.returncode)
             elif e.returncode > 0:
                 msg = "%s exit code: %d" % (options.executable, e.returncode)
-            self.log.critical(msg)
+            log.critical(msg)
             raise RuntimeError(msg)
         except OSError as e:
-            self.log.critical("Command execution failed")
-            self.log.exception(e)
+            log.critical("Command execution failed")
+            log.exception(e)
             raise e
 
 def main(args=None):
