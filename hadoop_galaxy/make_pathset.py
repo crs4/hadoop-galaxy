@@ -19,36 +19,9 @@ import pydoop.hdfs as phdfs
 
 from hadoop_galaxy import log
 from hadoop_galaxy.pathset import FilePathset
+from hadoop_galaxy.utils import Uri, expand_paths, print_err
 
 ValidModes = ('default', 'local')
-
-def log(*args):
-    print >> sys.stderr, ' '.join(args)
-
-class Uri(object):
-    def __init__(self, *args):
-        if len(args) == 1 and all(hasattr(args[0], attr) for attr in ('scheme', 'netloc', 'path')):
-            self.scheme = args[0].scheme
-            self.netloc = args[0].netloc
-            self.path = args[0].path
-        elif len(args) == 3:
-            self.scheme, self.netloc, self.path = args
-        else:
-            raise ValueError()
-        if self.scheme == 'file':
-            if self.netloc:
-                raise ValueError("Can't specify a netloc with file: scheme")
-            if self.path and not self.path.startswith('/'):
-                raise ValueError("Must use absolute paths with file: scheme (found %s)" % self.path)
-        if self.netloc and not self.scheme:
-            raise ValueError("Can't specify a host without an access scheme")
-
-    def geturl(self):
-        if self.scheme:
-            url = "%s://%s%s" % (self.scheme, self.netloc, self.path)
-        else:
-            url = self.path
-        return url
 
 def get_default_fs():
     root_ls = phdfs.ls('/')
@@ -78,38 +51,6 @@ def resolve_datapath(mode, datapath):
         u.path = os.path.abspath(datapath)
     return u
 
-def expand_paths(datapath_uri):
-    """
-    If a URI contains wildcards, this function expands them.
-
-    Returns a list of URIs.
-    """
-    # simple case:  the path simply exists
-    if phdfs.path.exists(datapath_uri.geturl()):
-        return [datapath_uri.geturl()]
-
-    # second case:  the path doesn't exist as it is.  It may contain wildcards, so we try
-    # listing the datapath with hadoop dfs.  If we were to list with
-    # pydoop.hdfs.ls we'd have to implement hadoop wildcards ourselves (perhaps with fnmatch)
-
-    def process(ls_line):
-        path = ls_line[(ls_line.rindex(' ') + 1):]
-        url = Uri(urlparse.urlparse(path))
-        url.scheme = datapath_uri.scheme
-        url.netloc = datapath_uri.netloc
-        return url.geturl()
-
-    try:
-        # run -ls with hadoop dfs the process the output.
-        # We drop the first line since it's something like "Found xx items".
-        ls_output = subprocess.check_output([pydoop.hadoop_exec(), 'dfs', '-ls', datapath_uri.geturl()]).rstrip('\n').split('\n')[1:]
-        # for each data line, run apply the 'process' function to transform it into a full URI
-        return map(process, ls_output)
-    except subprocess.CalledProcessError as e:
-        log("Could not list datapath %s.  Please check whether it exists" % datapath_uri.geturl())
-        log("Message:", str(e))
-        sys.exit(1)
-
 def parse_args(args=None):
     parser = argparse.ArgumentParser(description="Make a pathset file from one or more paths")
     parser.add_argument('--force-local', action='store_true', help="Force path to be local (i.e., URI starting with file://")
@@ -127,8 +68,8 @@ def test_hadoop():
     try:
         subprocess.check_output(cmd)
     except subprocess.CalledProcessError as e:
-        log("Error running hadoop program.  Please check your environment (tried %s)" % ' '.join(cmd))
-        log("Message:", str(e))
+        print_err("Error running hadoop program.  Please check your environment (tried %s)" % ' '.join(cmd))
+        print_err("Message:", str(e))
         sys.exit(2)
 
 def do_work(options):
