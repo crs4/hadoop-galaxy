@@ -118,6 +118,8 @@ class FilePathset(Pathset):
     comments = []
     for line in fd.xreadlines():
       line = line.rstrip('\n')
+      if not line:
+        continue # skip blank lines
       if line.startswith('#'): # comment line
         if len(line) >= 2 and line[1] == ' ': # trim one space after #, if it's there
           comments.append(line[2:])
