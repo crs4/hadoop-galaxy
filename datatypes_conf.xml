@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<datatypes>
+  <registration>
+    <datatype extension="pathset" type="galaxy.datatypes.data:Text" mimetype="text/plain" subclass="True" display_in_upload="true" />
+  </registration>
+</datatypes>
