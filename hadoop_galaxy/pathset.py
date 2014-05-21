@@ -7,7 +7,6 @@
 #
 # END_COPYRIGHT
 
-import argparse
 import os
 import urlparse
 
@@ -25,6 +24,15 @@ class Pathset(object):
     """
     self.paths = map(self.sanitize_path, pathlist)
     self.datatype = self.Unknown
+    self._comment = ""
+
+  @property
+  def comment(self):
+    return self._comment
+
+  @comment.setter
+  def comment(self, c):
+    self._comment = (c if c is not None else "")
 
   def set_datatype(self, datatype):
     self.datatype = datatype
@@ -106,11 +114,26 @@ class FilePathset(Pathset):
   def read(self, fd):
     header = fd.readline().rstrip('\n')
     self.__parse_header(header)
-    self.paths = [ line.rstrip('\n') for line in fd.xreadlines() ]
+    self.paths = [ ]
+    comments = []
+    for line in fd.xreadlines():
+      line = line.rstrip('\n')
+      if line.startswith('#'): # comment line
+        if len(line) >= 2 and line[1] == ' ': # trim one space after #, if it's there
+          comments.append(line[2:])
+        else:
+          comments.append(line[1:]) # else only trim the #
+      else:
+        self.paths.append(line)
+    self._comment = '\n'.join(comments)
     return self
 
   def write(self, fd):
     fd.write(self.__format_header() + '\n')
+    # write comments
+    if self._comment:
+      fd.write('#')
+      fd.write(self._comment.replace('\n', '\n# '))
     for p in self.paths:
       fd.write(p)
       fd.write('\n')
