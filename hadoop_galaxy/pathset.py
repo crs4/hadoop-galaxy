@@ -136,6 +136,8 @@ class FilePathset(Pathset):
     if self._comment:
       fd.write('#')
       fd.write(self._comment.replace('\n', '\n# '))
+      if self._comment[-1] != '\n':
+        fd.write('\n')
     for p in self.paths:
       fd.write(p)
       fd.write('\n')
