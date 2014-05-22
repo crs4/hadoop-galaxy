@@ -9,10 +9,8 @@
 #
 # END_COPYRIGHT
 
-import logging
 import sys
 from hadoop_galaxy.cat_paths import main
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    main(sys.argv[1:])
+    sys.exit(main())
