@@ -13,8 +13,4 @@ import sys
 from hadoop_galaxy.put_dataset import main
 
 if __name__ == '__main__':
-    try:
-        main()
-    except Exception as e:
-        print >> sys.stderr, str(e)
-        sys.exit(1)
+    sys.exit(main())

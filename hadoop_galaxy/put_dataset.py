@@ -20,7 +20,7 @@ import pydoop
 import pydoop.hdfs as phdfs
 
 from hadoop_galaxy import log
-from hadoop_galaxy.utils import expand_paths
+from hadoop_galaxy.utils import expand_paths, config_logging
 from hadoop_galaxy.pathset import FilePathset
 
 # Environment variable to specify where to put the datasets
@@ -35,7 +35,9 @@ def parse_args(args=None):
             help="URI to a directory on the destination file system where the dataset(s) " +\
                  "will be copied (default: value of %s environment variable)" % EnvPutDir)
     parser.add_argument('--distcp', action='store_true', help="Use Hadoop distcp to perform the copy")
-    parser.add_argument('--log-level', choices=['debug', 'info', 'warn', 'error', 'critical'])
+    parser.add_argument('--log-level',
+            choices=['debug', 'info', 'warn', 'error', 'critical'],
+            default='info')
 
     options = parser.parse_args(args)
 
@@ -49,12 +51,6 @@ def parse_args(args=None):
     if phdfs.path.exists(options.workspace) and not phdfs.path.isdir(options.workspace):
         parser.error("Workspace path %s exists and it's not a directory!" % options.workspace)
     return options
-
-def config_logging(options):
-    if options.log_level:
-        logging.basicConfig(level=getattr(logging, options.log_level.upper()))
-    else:
-        logging.basicConfig(level=logging.INFO)
 
 def src_to_dest_path(workspace, src_path):
     """
@@ -168,7 +164,12 @@ def perform_copy(options):
         output_pathset.write(f)
 
 def main(args=None):
-    args = args or sys.argv[1:]
-    options = parse_args(args)
-    config_logging(options)
-    perform_copy(options)
+    try:
+        args = args or sys.argv[1:]
+        options = parse_args(args)
+        config_logging(options.log_level)
+        perform_copy(options)
+        return 0
+    except Exception as e:
+        print >> sys.stderr, str(e)
+        return 1

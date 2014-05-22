@@ -7,6 +7,7 @@
 #
 # END_COPYRIGHT
 
+import logging
 import subprocess
 import sys
 import urlparse
@@ -15,6 +16,15 @@ import pydoop
 import pydoop.hdfs as phdfs
 
 from hadoop_galaxy import log
+
+def config_logging(log_level='INFO'):
+    if not log_level:
+        level=logging.INFO
+    elif isinstance(log_level, basestring):
+        level = getattr(logging, log_level.upper())
+    else:
+        level = log_level
+    logging.basicConfig(level=level)
 
 def _logger_has_handler(logger):
     l = logger
