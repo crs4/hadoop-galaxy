@@ -92,4 +92,3 @@ def expand_paths(datapath_uri):
         print_err("Could not list datapath %s.  Please check whether it exists" % datapath_uri.geturl())
         print_err("Message:", str(e))
         sys.exit(1)
-

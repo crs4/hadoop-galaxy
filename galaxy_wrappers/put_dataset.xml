@@ -1,0 +1,39 @@
+<tool id="hadoop_galaxy_put_dataset" name="Put dataset" version="0.1.0">
+  <description>Copy data from Galaxy storage to Hadoop storage.</description>
+
+  <command interpreter="python">
+    put_dataset
+    #if $workspace != ""
+      --hadoop-workspace "$workspace"
+    #end if
+    #if $use_distcp
+      --distcp
+    #end if
+    "$input_pathset" "$output_path"
+  </command>
+
+  <inputs>
+    <param name="input_pathset" type="data" format="pathset" label="Galaxy pathset" />
+
+    <param name="workspace" type="text" label="Path to workspace for Hadoop data"
+       help="The data will be copied to a new directory under this path. The value can also be set through the HADOOP_GALAXY_PUT_DIR environment variable." />
+
+    <param name="use_distcp" type="boolean" checked="false" label="Use Hadoop distcp2"
+       help="Use distcp2 if Hadoop can access Galaxy's storage space and you're copying a large dataset." />
+  </inputs>
+
+  <outputs>
+    <data name="output_path" format="pathset" label="Hadoop pathset from $input_pathset.name" />
+  </outputs>
+
+  <stdio>
+    <exit_code range="1:" level="fatal" />
+  </stdio>
+
+  <help>
+      This tools copies data from Galaxy's storage to storage that is suitable for
+      Hadoop jobs.  An example of a use case may be to copy data from the Galaxy server
+      to HDFS. Whether this tool is required depends on your specific local setup.
+  </help>
+
+</tool>
