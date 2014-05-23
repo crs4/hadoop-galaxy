@@ -221,10 +221,8 @@ class DistCatPaths(object):
         self._input_pathset = pset
 
     @staticmethod
-    def traverse_input(input_pathset):
+    def traverse_input(pset):
         source_paths = []
-
-        pset = FilePathset.from_file(input_pathset)
 
         def ordered_traverse(root):
             host, port, root_path = phdfs.path.split(root)
@@ -265,7 +263,8 @@ class DistCatPaths(object):
             raise RuntimeError("You must set the input pathset before running")
 
         log.info("Analysing input paths")
-        self._src_paths = self.traverse_input(self._input_pathset)
+        pset = FilePathset.from_file(self._input_pathset)
+        self._src_paths = self.traverse_input(pset)
         log.info("Found %s input paths for a total of %0.1f MB", len(self._src_paths),
                 sum(i.size for i in self._src_paths) / float(2**20))
 
@@ -317,9 +316,9 @@ class DistCatPaths(object):
             log.info("Launching pydoop job")
             pydoop_main.main(script_args)
             log.info("Finished")
-            if self.delete_source:
+            if self._delete_source:
                 log.info("Deleting input pathset data")
-                _delete_pathset_data(self._input_pathset)
+                _delete_pathset_data(pset)
         finally:
             log.debug("Cleaning up")
             self._clean_up(work_dir)
