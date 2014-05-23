@@ -11,6 +11,7 @@
 import argparse
 import logging
 import os
+import sys
 import time
 from urlparse import urlparse
 from uuid import uuid4
@@ -18,6 +19,7 @@ import pydoop.app.main as pydoop_main
 import pydoop.hdfs as phdfs
 
 from hadoop_galaxy.pathset import FilePathset
+from hadoop_galaxy.cat_paths import _delete_pathset_data
 
 _TenMB = 10 * 2**20
 
@@ -131,21 +133,22 @@ def parse_args(args):
     parser.add_argument('input_pathset', help="Input pathset")
     parser.add_argument('output_file',
             help="Output file. MUST be on a mounted file system accessible from all Hadoop nodes")
+    parser.add_argument('--delete-source', action='store_true', default=False,
+            help="Delete the data referenced by the source pathset after it has been concatenated into the destination file.")
     options = parser.parse_args(args)
 
     if not os.access(options.input_pathset, os.R_OK):
         parser.error("Can't read specified input path %s" % options.input_pathset)
 
-    output_file = options.output_file
-    u = urlparse(output_file)
+    u = urlparse(options.output_file)
     if u.scheme == 'file' or not u.scheme:
         # if the output path isn't specified as a full URI we prefer
         # it to be on the local file system
-        output_file = 'file://' + os.path.abspath(u.path)
+        options.output_file = 'file://' + os.path.abspath(u.path)
     else:
         parser.error("Output path must be on locally mounted file system")
 
-    return options.input_pathset, output_file
+    return options
 
 class _PathInfo(object):
     def __init__(self, path, size):
@@ -183,7 +186,16 @@ class DistCatPaths(object):
         self._src_paths = None
         self._output_path = None
         self._input_pathset = None
+        self._delete_source = False
         self.log = logging.getLogger('cat paths')
+
+    @property
+    def delete_source(self):
+        return self._delete_source
+
+    @delete_source.setter
+    def delete_source(self, v):
+        self._delete_source = v
 
     @property
     def output_path(self):
@@ -279,7 +291,8 @@ class DistCatPaths(object):
                 self._write_mr_input(f)
             self.log.debug("Wrote temp input file %s", work_input_path)
 
-            # create/truncate the output file
+            # Create/truncate the output file. The individual tasks will later
+            # reopen it for writing and copy their chunk to the appropriate position
             self.log.info("Creating output file %s", work_output_path)
             with open(phdfs.path.split(self.output_path)[2], 'w'):
                 pass
@@ -299,15 +312,19 @@ class DistCatPaths(object):
             self.log.info("Launching pydoop job")
             pydoop_main.main(script_args)
             self.log.info("Finished")
+            if self.delete_source:
+                self.log.info("Deleting input pathset data")
+                _delete_pathset_data(self._input_pathset)
         finally:
             self.log.debug("Cleaning up")
             self._clean_up(work_dir)
 
-def main(args):
-    input_pathset, output_file = parse_args(args)
+def main(args=None):
+    options = parse_args(args or sys.argv[1:])
     driver = DistCatPaths()
-    driver.set_src_pathset(input_pathset)
-    driver.output_path = output_file
+    driver.set_src_pathset(options.input_pathset)
+    driver.output_path = options.output_file
+    driver.delete_source = options.delete_source
 
     start_time = time.time()
 
