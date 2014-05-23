@@ -9,11 +9,8 @@
 #
 # END_COPYRIGHT
 
-
-import logging
 import sys
 import hadoop_galaxy.dist_cat_paths as dp
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    dp.main(sys.argv[1:])
+    sys.exit(dp.main())

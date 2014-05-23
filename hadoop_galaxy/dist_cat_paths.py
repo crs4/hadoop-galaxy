@@ -9,7 +9,6 @@
 # END_COPYRIGHT
 
 import argparse
-import logging
 import os
 import sys
 import time
@@ -18,8 +17,11 @@ from uuid import uuid4
 import pydoop.app.main as pydoop_main
 import pydoop.hdfs as phdfs
 
+from hadoop_galaxy.utils import config_logging
 from hadoop_galaxy.pathset import FilePathset
 from hadoop_galaxy.cat_paths import _delete_pathset_data
+
+from hadoop_galaxy import log
 
 _TenMB = 10 * 2**20
 
@@ -135,6 +137,9 @@ def parse_args(args):
             help="Output file. MUST be on a mounted file system accessible from all Hadoop nodes")
     parser.add_argument('--delete-source', action='store_true', default=False,
             help="Delete the data referenced by the source pathset after it has been concatenated into the destination file.")
+    parser.add_argument('--log-level',
+            choices=['debug', 'info', 'warn', 'error', 'critical'],
+            default='info')
     options = parser.parse_args(args)
 
     if not os.access(options.input_pathset, os.R_OK):
@@ -187,7 +192,6 @@ class DistCatPaths(object):
         self._output_path = None
         self._input_pathset = None
         self._delete_source = False
-        self.log = logging.getLogger('cat paths')
 
     @property
     def delete_source(self):
@@ -246,22 +250,23 @@ class DistCatPaths(object):
             fd.write("%s\n" % line)
             dest_pos += src.size
 
-    def _clean_up(self, *paths):
+    @staticmethod
+    def _clean_up(*paths):
         for p in paths:
             try:
-                self.log.debug("Removing path: %s", p)
+                log.debug("Removing path: %s", p)
                 phdfs.rmr(p)
             except StandardError as e:
-                self.log.warning("Error deleting path %s", p)
-                self.log.exception(e)
+                log.warning("Error deleting path %s", p)
+                log.exception(e)
 
     def run(self):
         if not self._input_pathset:
             raise RuntimeError("You must set the input pathset before running")
 
-        self.log.info("Analysing input paths")
+        log.info("Analysing input paths")
         self._src_paths = self.traverse_input(self._input_pathset)
-        self.log.info("Found %s input paths for a total of %0.1f MB", len(self._src_paths),
+        log.info("Found %s input paths for a total of %0.1f MB", len(self._src_paths),
                 sum(i.size for i in self._src_paths) / float(2**20))
 
         output_dir = os.path.dirname(self.output_path)
@@ -272,28 +277,28 @@ class DistCatPaths(object):
         work_output_path = os.path.join(work_dir, "junk_output")
         work_exec_path = os.path.join(work_dir, "dist_cat_script")
 
-        self.log.debug("Run parameters")
-        self.log.debug("output path: %s", self.output_path)
-        self.log.debug("work dir: %s", work_dir)
-        self.log.debug("work_input_path: %s", work_input_path)
-        self.log.debug("work_output_path: %s", work_output_path)
-        self.log.debug("work_exec_path: %s", work_exec_path)
+        log.debug("Run parameters")
+        log.debug("output path: %s", self.output_path)
+        log.debug("work dir: %s", work_dir)
+        log.debug("work_input_path: %s", work_input_path)
+        log.debug("work_output_path: %s", work_output_path)
+        log.debug("work_exec_path: %s", work_exec_path)
 
         host, port, path = phdfs.path.split(work_dir)
         fs = phdfs.fs.hdfs(host, port)
         if not fs.exists(path):
-            self.log.debug("Creating work directory %s on fs (%s, %s)", path, host, port)
+            log.debug("Creating work directory %s on fs (%s, %s)", path, host, port)
             fs.create_directory(path)
         try:
-            self.log.debug("Creating job input file %s", work_input_path)
+            log.debug("Creating job input file %s", work_input_path)
             # need to only pass the path to this call (no host/port)
             with fs.open_file(phdfs.path.split(work_input_path)[2], 'w') as f:
                 self._write_mr_input(f)
-            self.log.debug("Wrote temp input file %s", work_input_path)
+            log.debug("Wrote temp input file %s", work_input_path)
 
             # Create/truncate the output file. The individual tasks will later
             # reopen it for writing and copy their chunk to the appropriate position
-            self.log.info("Creating output file %s", work_output_path)
+            log.info("Creating output file %s", work_output_path)
             with open(phdfs.path.split(self.output_path)[2], 'w'):
                 pass
 
@@ -307,20 +312,19 @@ class DistCatPaths(object):
                 __file__,
                 work_input_path,
                 work_output_path ]
-            self.log.debug("pydoop script args: %s", script_args)
+            log.debug("pydoop script args: %s", script_args)
 
-            self.log.info("Launching pydoop job")
+            log.info("Launching pydoop job")
             pydoop_main.main(script_args)
-            self.log.info("Finished")
+            log.info("Finished")
             if self.delete_source:
-                self.log.info("Deleting input pathset data")
+                log.info("Deleting input pathset data")
                 _delete_pathset_data(self._input_pathset)
         finally:
-            self.log.debug("Cleaning up")
+            log.debug("Cleaning up")
             self._clean_up(work_dir)
 
-def main(args=None):
-    options = parse_args(args or sys.argv[1:])
+def run_program(options):
     driver = DistCatPaths()
     driver.set_src_pathset(options.input_pathset)
     driver.output_path = options.output_file
@@ -333,4 +337,14 @@ def main(args=None):
     end_time = time.time()
     duration = end_time - start_time
     mb = sum(i.size for i in driver.src_paths) / float(2**20)
-    driver.log.info("Wrote %0.1f MB in %d seconds (%0.1f MB/s)", mb, round(duration), mb / (min(0.1, duration)))
+    log.info("Wrote %0.1f MB in %d seconds (%0.1f MB/s)", mb, round(duration), mb / (min(0.1, duration)))
+
+def main(args=None):
+    try:
+        options = parse_args(args or sys.argv[1:])
+        config_logging(options.log_level)
+        run_program(options)
+        return 0
+    except StandardError as e:
+        log.critical(str(e))
+        return 1
