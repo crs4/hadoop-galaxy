@@ -11,7 +11,7 @@
   </command>
 
   <inputs>
-    <param name="criteria_expr" type="text" label="Regular expression criteria" />
+    <param name="criteria_expr" type="text" label="Regular expression criteria">
       <validator type="empty_field" />
     </param>
     <param name="anchor_end" type="boolean"
