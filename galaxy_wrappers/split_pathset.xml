@@ -1,7 +1,7 @@
 <tool id="hadoop_galaxy_split_pathset" name="Split pathset" version="0.1.0">
   <description>Split a pathset according to a regular expression criteria</description>
 
-  <command interpreter="python">
+  <command>
       split_pathset '$criteria_expr'
       #if $anchor_end
           --anchor-end

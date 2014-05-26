@@ -1,7 +1,7 @@
 <tool id="hadoop_galaxy_put_dataset" name="Put dataset" version="0.1.0">
   <description>Copy data from Galaxy storage to Hadoop storage.</description>
 
-  <command interpreter="python">
+  <command>
     put_dataset
     #if $workspace != ""
       --hadoop-workspace "$workspace"

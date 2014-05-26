@@ -1,7 +1,7 @@
 <tool id="hadoop_galaxy_cat_paths" name="Cat paths" version="0.1.0">
   <description>Concatenate all components of a pathset into a single file.</description>
 
-  <command interpreter="python">
+  <command>
     #if $use_hadoop
       dist_cat_paths
     #else
