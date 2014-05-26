@@ -25,7 +25,7 @@
 
   <outputs>
       <!-- TODO: can we read the format from input pathset and transfer it to output? -->
-    <data name="output_path" format="data" label="Concatenated dataset $input_pathset.name" />
+      <data name="output_path" format="data" label="Concatenated dataset $input_pathset.name" />
   </outputs>
 
   <stdio>
@@ -33,26 +33,26 @@
   </stdio>
 
   <help>
-    Datasets represented as pathsets can be split in a number of files.
-    This tool takes all of them and concatenates them into a single output file.
+Datasets represented as pathsets can be split in a number of files.
+This tool takes all of them and concatenates them into a single output file.
 
-    In your workflow, you'll need to explicitly set the appropriate data format on the
-    output dataset with an Action to "Change Datatype".
+In your workflow, you'll need to explicitly set the appropriate data format on the
+output dataset with an Action to "Change Datatype".
 
-    "Delete remote input data" option
-    ------------------------------------
-    With this option, after the data has been concated into the new Galaxy dataset,
-    the original files that were referenced by the pathset are deleted.  This effectively
-    tells the action to "move" the data instead of a "copying" it and helps
-    avoid amassing intermediate data in your Hadoop workspace.
+"Delete remote input data" option
+====================================
+With this option, after the data has been concated into the new Galaxy dataset,
+the original files that were referenced by the pathset are deleted.  This effectively
+tells the action to "move" the data instead of a "copying" it and helps
+avoid amassing intermediate data in your Hadoop workspace.
 
 
-    "Use Hadoop-based program" option
-    ------------------------------------
+"Use Hadoop-based program" option
+====================================
 
-    With this option you will use your entire Hadoop cluster to simultaneously write
-    multiple parts of the final file.  For this to be possible, the Hadoop nodes
-    must be able to access the Galaxy file space directly.  In addition, to achieve
-    reasonable results the Galaxy workspace should on a parallel shared file system.
+With this option you will use your entire Hadoop cluster to simultaneously write
+multiple parts of the final file.  For this to be possible, the Hadoop nodes
+must be able to access the Galaxy file space directly.  In addition, to achieve
+reasonable results the Galaxy workspace should on a parallel shared file system.
   </help>
 </tool>
