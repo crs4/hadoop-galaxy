@@ -2,7 +2,7 @@
 
 <toolbox>
   <section name="Hadoop-Galaxy" id="hadoop_galaxy">
-	<tool file="hadoop_galaxy/make_pathset.xml" />
+    <tool file="hadoop_galaxy/make_pathset.xml" />
     <tool file="hadoop_galaxy/put_dataset.xml" />
     <tool file="hadoop_galaxy/cat_paths.xml" />
     <tool file="hadoop_galaxy/split_pathset.xml" />
