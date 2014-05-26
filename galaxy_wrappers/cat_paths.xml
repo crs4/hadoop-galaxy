@@ -14,7 +14,9 @@
   </command>
 
   <inputs>
-    <param name="input_pathset" type="data" format="pathset" label="Input pathset" />
+    <param name="input_pathset" type="data" format="pathset" label="Input pathset">
+      <validator type="empty_field" />
+    </param>
     <param name="delete_source" type="boolean" checked="false" label="Delete remote input data"
         help="This option makes the tool move the data rather than copy it" />
     <param name="use_hadoop" type="boolean" checked="false" label="Use Hadoop-based program"
