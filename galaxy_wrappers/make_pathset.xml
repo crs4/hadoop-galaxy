@@ -14,7 +14,7 @@
       #end if
       "$output_path" "$paths.datapaths"
     #else
-      #error
+      #raise ValueError("BUG!! unknown paths.source value")
     #end if
   </command>
 
