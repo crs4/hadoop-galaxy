@@ -141,7 +141,7 @@ def perform_copy(options):
     copy_groups = _group_by_dest_dir(src_uris, destination_uris)
     if log.isEnabledFor(logging.DEBUG) and len(copy_groups) > 0:
         tpl = next(copy_groups.iteritems())
-        log.debug("one copy group:\n\tdest:%s\n\tsrc: %s", tpl[0], tpl[1])
+        log.debug("one copy group:\n\tdest: %s\n\tsrc: %s", tpl[0], tpl[1])
 
     try:
         if options.distcp:
@@ -157,7 +157,7 @@ def perform_copy(options):
         except IOError:
             log.debug("Failed to clean-up destination path %s. Maybe it was never created.", dest_path)
         raise e
-    output_pathset = FilePathset(dest_path)
+    output_pathset = FilePathset(*copy_groups.iterkeys())
     output_pathset.set_datatype(input_pathset.datatype)
     output_pathset.comment = "Copied from\n" + '\n'.join(src_paths)
     with open(options.output_dataset, 'w') as f:
