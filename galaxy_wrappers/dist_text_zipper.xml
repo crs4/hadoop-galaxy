@@ -1,4 +1,4 @@
-<tool id="dist_text_zipper" name="Dist TextZipper" version="0.1.0">
+<tool id="hadoop_galaxy_dist_text_zipper" name="Dist TextZipper" version="0.1.0">
   <description>Compress lots of text files on Hadoop</description>
 
   <command>
