@@ -16,13 +16,22 @@ import urlparse
 import pydoop
 import pydoop.hdfs as phdfs
 
+EnvLogLevel = 'HADOOP_GALAXY_LOG_LEVEL'
+
 def config_logging(log_level='INFO'):
-    if not log_level:
-        level=logging.INFO
-    elif isinstance(log_level, basestring):
+    if isinstance(log_level, basestring):
         level = getattr(logging, log_level.upper())
-    else:
+    elif log_level:
         level = log_level
+    elif os.environ.get(EnvLogLevel):
+        level = os.environ.get(EnvLogLevel).upper()
+        if hasattr(logging, level):
+            level = getattr(logging, level)
+        else:
+            print >> sys.stderr, "Ignoring value of %s because it's not a valid log level" % EnvLogLevel
+            level = logging.INFO # default
+    else:
+        level = logging.INFO # default
     logging.basicConfig(level=level)
 
 def _logger_has_handler(logger):
