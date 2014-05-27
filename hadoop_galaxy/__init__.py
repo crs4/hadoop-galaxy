@@ -20,6 +20,8 @@ import pydoop.hdfs as phdfs
 from hadoop_galaxy.pathset import Pathset, FilePathset
 from hadoop_galaxy.utils import get_abs_executable_path
 
+EnvOutputDataDir = 'HADOOP_GALAXY_DATA_DIR'
+
 log = logging.getLogger('HadoopGalaxy')
 
 class HadoopToolRunner(object):
@@ -161,8 +163,9 @@ class HadoopGalaxy(object):
                 help="Output path provided by Galaxy")
         parser.add_argument('--append-python-path', metavar="PATH",
                  help="Path to append to the PYTHONPATH before calling the executable")
-        parser.add_argument('--output-dir', metavar="PATH",
-                 help="URI to a working directory where the Hadoop job will write its output, if different from the Galaxy default.")
+        parser.add_argument('--output-data-dir', metavar="PATH",
+                help="URI to a working directory where the Hadoop job will write its output. Can also be " +\
+                        "set through HADOOP_GALAXY_DATA_DIR env. variable (default: Galaxy data dir).")
         parser.add_argument('--conf', metavar="conf_file", help="Hadoop+Galaxy configuration file")
         parser.add_argument('remaining_args', nargs=argparse.REMAINDER)
         return parser
@@ -201,25 +204,31 @@ class HadoopGalaxy(object):
         if self.conf.has_key('HADOOP_CONF_DIR'):
             self._cmd_env['HADOOP_CONF_DIR'] = self.conf['HADOOP_CONF_DIR']
 
-    def gen_output_path(self, options, name=None):
+    def gen_data_output_path(self, options, name=None):
         """
         Generate an output path for the data produced by the hadoop job.
 
         The default behaviour is to use the path provided for the output pathset
-        (options.output) as a base.  The data path is created as
+        (options.output) as a base.  Therefore, the data path is created as
 
             os.path.dirname(options.output)/hadoop_output/os.path.basename(options.output)
 
         So, in a typicaly situation a directory "hadoop_output" will be created
         in the Galaxy data directory and the job output dir will be created
         inside it (with the same name as the galaxy dataset).
-            NOTE:  in this manner your Hadoop job will not write to HDFS; instead,
+
+        .. note:  in this manner your Hadoop job will not write to HDFS; instead,
             it will write to the same storage as Galaxy.
 
-        This default directory for hadoop output can be overridden through
-        options.output_dir.  In that case, the Hadoop job output will be sent to
+        This set-up is not ideal for most applications.  So, this default directory
+        for hadoop output can be overridden:
 
-            options.output_dir/os.path.basename(options.output)
+          * through options.output_data_dir, with first precendence;
+          * through the environment variable HADOOP_GALAXY_DATA_DIR.
+
+        In these cases the Hadoop job output will be sent to
+
+            options.output_data_dir/os.path.basename(options.output)
 
         The name of the last component of the path (os.path.basename(...)) can be
         explicitly set by passing a value for the `name` function argument.
@@ -232,8 +241,10 @@ class HadoopGalaxy(object):
             # and pathset file in the same place.
             suffix_path = os.path.basename(options.output)
 
-        if options.output_dir:
-            datapath = options.output_dir
+        if options.output_data_dir:
+            datapath = options.output_data_dir
+        elif os.environ.get(EnvOutputDataDir):
+            datapath = os.environ.get(EnvOutputDataDir)
         else:
             datapath = os.path.join(os.path.dirname(options.output), self.HadoopOutputDirName)
 
@@ -290,7 +301,7 @@ class HadoopGalaxy(object):
             log.debug("Read input pathset: %s", input_pathset)
 
         # new pathset with a single output path
-        output_pathset = FilePathset(self.gen_output_path(options))
+        output_pathset = FilePathset(self.gen_data_output_path(options))
 
         try:
             self._runner.set_input(input_pathset)
