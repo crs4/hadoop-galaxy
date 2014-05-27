@@ -18,6 +18,7 @@ import yaml
 import pydoop.hdfs as phdfs
 
 from hadoop_galaxy.pathset import Pathset, FilePathset
+from hadoop_galaxy.utils import get_abs_executable_path
 
 log = logging.getLogger('HadoopGalaxy')
 
@@ -115,23 +116,7 @@ class HadoopToolRunner(object):
     if self.output_str is None:
       raise RuntimeError("output path not set!")
 
-    # now verify that we find the executable in the PATh
-    if os.path.isabs(self.executable):
-        full_path = self.executable
-        if not os.access(full_path, os.X_OK):
-            raise RuntimeError("Path %s is not an executable" % full_path)
-    else:
-        paths = (env or os.environ).get('PATH', '')
-        try:
-          full_path = \
-            next(os.path.join(p, self.executable)
-                 for p in paths.split(os.pathsep)
-                 if os.access(os.path.join(p, self.executable), os.X_OK))
-        except StopIteration:
-          raise RuntimeError(
-            ("The tool %s either isn't in the PATH or isn't executable.\n" +
-             "\nPATH: %s") % (self.executable, paths))
-
+    full_path = get_abs_executable_path(self.executable, (env or os.environ))
     logging.getLogger(self.__class__.__name__).debug("Found tool: %s", full_path)
     return [full_path] + self.generic_opts + self.input_params + [self.output_str]
 

@@ -8,14 +8,13 @@
 # END_COPYRIGHT
 
 import logging
+import os
 import subprocess
 import sys
 import urlparse
 
 import pydoop
 import pydoop.hdfs as phdfs
-
-from hadoop_galaxy import log
 
 def config_logging(log_level='INFO'):
     if not log_level:
@@ -41,6 +40,7 @@ def print_err(*args):
     Else print directly to stderr.
     """
     log_string = ' '.join(args)
+    log = logging.getLogger('HadoopGalaxy')
     if _logger_has_handler(log):
         log.error(log_string)
     else:
@@ -102,3 +102,24 @@ def expand_paths(datapath_uri):
         print_err("Could not list datapath %s.  Please check whether it exists" % datapath_uri.geturl())
         print_err("Message:", str(e))
         sys.exit(1)
+
+def get_abs_executable_path(executable_name, env=None):
+    if env is None:
+        env = os.environ
+    # now verify that we find the executable in the PATh
+    if os.path.isabs(executable_name):
+        full_path = executable_name
+        if not os.access(full_path, os.X_OK):
+            raise RuntimeError("Path %s is not an executable" % full_path)
+    else:
+        paths = env.get('PATH', '')
+        try:
+            full_path = \
+              next(os.path.join(p, executable_name)
+                   for p in paths.split(os.pathsep)
+                   if os.access(os.path.join(p, executable_name), os.X_OK))
+        except StopIteration:
+            raise RuntimeError(
+              ("The tool %s either isn't in the PATH or isn't executable.\n" +
+               "\nPATH: %s") % (executable_name, paths))
+    return full_path
