@@ -1,0 +1,26 @@
+<tool id="dist_text_zipper" name="Dist TextZipper" version="0.1.0">
+  <description>Compress lots of text files on Hadoop</description>
+
+  <command>
+    hadoop_galaxy
+    --input $input_data
+    --output $output
+    --executable dist_text_zipper
+  </command>
+
+  <inputs>
+    <param name="input_data" type="data" format="pathset" label="Source data set"/>
+  </inputs>
+
+  <outputs>
+    <data name="output" format="pathset" label="Zipped $input_data.name" />
+  </outputs>
+
+  <stdio>
+    <exit_code range="1:" level="fatal" />
+  </stdio>
+
+  <help>
+This is a Pydoop-based distributed text file compression program.
+  </help>
+</tool>
