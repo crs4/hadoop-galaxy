@@ -1,6 +1,7 @@
 <tool id="hadoop_galaxy_split_pathset" name="Split pathset" version="0.1.0">
   <description>Split a pathset according to a regular expression criteria</description>
   <requirements>
+    <requirement type="package" version="0.11">pydoop</requirement>
     <requirement type="package" version="0.1.0">hadoop-galaxy</requirement>
   </requirements>
 

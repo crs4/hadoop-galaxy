@@ -1,6 +1,7 @@
 <tool id="hadoop_galaxy_make_pathset" name="Make Pathset" version="0.1.0">
   <description>Create a pathset for a set of files</description>
   <requirements>
+    <requirement type="package" version="0.11">pydoop</requirement>
     <requirement type="package" version="0.1.0">hadoop-galaxy</requirement>
   </requirements>
 

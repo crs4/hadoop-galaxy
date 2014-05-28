@@ -1,6 +1,7 @@
 <tool id="hadoop_galaxy_dist_text_zipper" name="Dist TextZipper" version="0.1.0">
   <description>Compress lots of text files on Hadoop</description>
   <requirements>
+    <requirement type="package" version="0.11">pydoop</requirement>
     <requirement type="package" version="0.1.0">hadoop-galaxy</requirement>
   </requirements>
 
