@@ -24,7 +24,7 @@
   <inputs>
     <conditional name="paths">
       <param name="source" type="select" label="Path source">
-        <option value="tool_input">Tool input</option>
+        <option value="tool_input">Dataset from your history</option>
         <option value="text_box">User input</option>
       </param>
       <when value="tool_input">
@@ -52,5 +52,6 @@
   </stdio>
 
   <help>
+Create a pathset for a set of files to be used as input for Hadoop tools.
   </help>
 </tool>
