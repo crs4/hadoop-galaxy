@@ -21,6 +21,7 @@ from hadoop_galaxy.pathset import Pathset, FilePathset
 from hadoop_galaxy.utils import get_abs_executable_path
 
 EnvOutputDataDir = 'HADOOP_GALAXY_DATA_DIR'
+EnvConfPath = 'HADOOP_GALAXY_CONF'
 
 log = logging.getLogger('HadoopGalaxy')
 
@@ -254,18 +255,19 @@ class HadoopGalaxy(object):
 
     def _configure_for_job(self, options):
         self._cmd_env = copy.copy(os.environ)
-        if options.conf:
-            log.debug("loading config from %s", options.conf)
+        conf_file = options.conf or os.environ.get(EnvConfPath)
+        if conf_file:
+            log.debug("loading config from %s", conf_file)
             try:
-                with open(options.conf) as f:
+                with open(conf_file) as f:
                     self.conf = yaml.load(f)
                 log.debug("loaded conf: %s", self.conf)
             except IOError as e:
-              log.critical("Couldn't read the specified configuration from %s", options.conf)
+              log.critical("Couldn't read the specified configuration from %s", conf_file)
               log.exception(e)
               sys.exit(1)
             except yaml.YAMLError as e:
-              log.critical("Error parsing configuration file %s", options.conf)
+              log.critical("Error parsing configuration file %s", conf_file)
               log.exception(e)
               raise
         else:
