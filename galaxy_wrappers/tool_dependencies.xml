@@ -7,6 +7,7 @@
     <install version="1.0">
       <actions>
         <action type="shell_command">git clone https://github.com/crs4/hadoop-galaxy/</action>
+        <action type="shell_command">git reset --hard 0.1.0</action>
         <action type="set_environment_for_install">
           <repository name="package_pydoop_0_11" owner="crs4">
             <package name="pydoop" version="0.11" />
