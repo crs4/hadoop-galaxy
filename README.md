@@ -14,12 +14,12 @@ Galaxy and mix them with regular tools in your workflows.
 How to use it
 -----------------
 
-### Install it via the Galaxy Tool Shed
+### Install it via the Galaxy main Tool Shed
 
-
-Hadoop-Galaxy will add a new **pathset** data type to your Galaxy installation.
-It will also install a few tools in your Galaxy menu which you might need to use in your
-workflows.  Finally, it'll install a Python executable `hadoop_galaxy` that is
+Install the [hadoop\_galaxy](http://toolshed.g2.bx.psu.edu/view/crs4/hadoop_galaxy)
+Tool Shed repository on your Galaxy installation, which will add a new **pathset** data type
+and a few tools in your Galaxy menu which you might need to use in your
+workflows.  Finally, it will install a Python executable `hadoop_galaxy` (together with its dependencies) that is
 the adaptor you need to use to run Hadoop-based programs in Galaxy.
 
 
