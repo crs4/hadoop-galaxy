@@ -14,7 +14,7 @@ Galaxy and mix them with regular tools in your workflows.
 How to use it
 -----------------
 
-### Install it via the tool shed
+### Install it via the Galaxy Tool Shed
 
 
 Hadoop-Galaxy will add a new **pathset** data type to your Galaxy installation.
@@ -92,7 +92,7 @@ Workflows
 --------------
 
 In your workflows you can mix Hadoop-based and conventional programs, though not
-automatically.  You'll need to keep track of when the data in Galaxy
+automatically.  You'll need to keep track of when the data is on Galaxy
 storage/format and when it's on Hadoop storage/format -- and use the
 Hadoop-Galaxy utilities to shuffle between them.
 
@@ -125,7 +125,7 @@ adapter) provided with Hadoop-Galaxy.
 
 
 Dataset 1 is a conventional Galaxy dataset. In step 2, `make_pathset` creates a
-pathset that references it so that it can be accessed the Hadoop program in step 3.
+pathset that references it so that it can be accessed by the Hadoop program in step 3.
 If the Hadoop nodes cannot access Galaxy's storage space directly, you'll have
 to insert an intermediate `put_dataset` step to copy the data from one storage
 to the other.  The last step concatenates the output part files produced by the
@@ -201,7 +201,7 @@ Why is all this necessary
 In most cases, Hadoop tools cannot be used directly from Galaxy for two reasons:
 
   * data are on HDFS, which isn't accessible to Galaxy
-  * datasets are split in multiple files, which is Galaxy doesn't handle well
+  * datasets are split in multiple files, which Galaxy doesn't handle well
     (although they're working on it)
 
 We've come with a solution that works by adding a layer of
