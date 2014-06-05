@@ -25,6 +25,38 @@ EnvConfPath = 'HADOOP_GALAXY_CONF'
 
 log = logging.getLogger('HadoopGalaxy')
 
+
+# The configuration file:
+#
+# We have a partly implemented feature for specifying some configuration parameters
+# through a configuration file, rather than through environment variables or
+# command-line arguments.  I started writing some documentation to put in the README,
+# but then decided not to insert it because the feature is not really complete since
+# the use of the configuration file isn't coherent across all Hadoop-Galaxy components.
+#
+# I'm dumping the partly written documentation here, for future use.
+##########################################################################################
+#  **HADOOP\_GALAXY\_CONF**: path to configuration file where you can specify the
+#  same options as the preceding environment variables, and more. This variable is
+#  not yet respected by all Hadoop-Galaxy components (work-in-progress).
+#
+#
+#  #### Configuration file
+#
+#  Some Hadoop-Galaxy components, including the adapter, support reading a yaml
+#  configuration file where you can configure the behaviour of the component and,
+#  for the adapter, configure how the Hadoop-based tool is run (e.g., set
+#  environment variables).
+#
+#  The following keys are recognized:
+#
+#  * HADOOP_HOME
+#  * HADOOP_CONF_DIR
+#  * tool\_env: next key-value paires to set environment
+##########################################################################################
+
+
+
 class HadoopToolRunner(object):
   """
   Implements the logic necessary to run a Hadoop-based tool from
