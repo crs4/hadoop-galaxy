@@ -22,6 +22,29 @@ and a few tools in your Galaxy menu which you might need to use in your
 workflows.  Finally, it will install a Python executable `hadoop_galaxy` (together with its dependencies) that is
 the adaptor you need to use to run Hadoop-based programs in Galaxy.
 
+### Configuration
+
+You'll want to configure Hadoop-Galaxy to work appropriately for your computing
+environment.  There are only a few configuration values and you can specify them
+via environment variables.
+
+**HADOOP\_GALAXY\_DATA\_DIR**: path where the `hadoop_galaxy` adapter will have
+the Hadoop jobs write their output data.  To have your Hadoop jobs write to HDFS
+set this variable to something like
+`hdfs://your.name.node:9000/user/galaxy/workspace`.
+
+* Default: will try to write to a directory called `hadoop_output` in the
+  Galaxy workspace.  Note that as a result by default the Hadoop jobs will not
+  write to HDFS.
+
+**HADOOP\_GALAXY\_PUT\_DIR**: the Hadoop-accessible directory to which the
+`put_dataset` tool (see below) will copy Galaxy datasets.
+
+**HADOOP\_GALAXY\_LOG\_LEVEL**: log level for tools and adapter.  Must be one of
+'debug', 'info', 'warn', 'error', 'critical'. This variable is not yet respected
+by all Hadoop-Galaxy components (work-in-progress).
+
+
 
 ### How to wrap your own Hadoop tool
 
