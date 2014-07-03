@@ -336,7 +336,7 @@ def run_program(options):
     end_time = time.time()
     duration = end_time - start_time
     mb = sum(i.size for i in driver.src_paths) / float(2**20)
-    log.info("Wrote %0.1f MB in %d seconds (%0.1f MB/s)", mb, round(duration), mb / (min(0.1, duration)))
+    log.info("Wrote %0.1f MB in %d seconds (%0.1f MB/s)", mb, round(duration), mb / (max(0.1, duration)))
 
 def main(args=None):
     try:
