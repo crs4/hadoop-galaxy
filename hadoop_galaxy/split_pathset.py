@@ -108,7 +108,7 @@ def main(args=None):
                 no_match_pathset.append(leaf)
 
     # write to file
-    with open(match_pathset, 'w') as f:
+    with open(options.output_true, 'w') as f:
         match_pathset.write(f)
-    with open(no_match_pathset, 'w') as f:
+    with open(options.output_false, 'w') as f:
         no_match_pathset.write(f)
