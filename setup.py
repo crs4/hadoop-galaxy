@@ -1,10 +1,10 @@
 # BEGIN_COPYRIGHT
-# 
+#
 # Copyright (C) 2014 CRS4.
-# 
+#
 # This file is part of hadoop-galaxy, released under the terms of the BSD
 # 3-Clause License <http://opensource.org/licenses/BSD-3-Clause>.
-# 
+#
 # END_COPYRIGHT
 
 """
@@ -16,7 +16,25 @@ Galaxy: <http://galaxyproject.org>
 
 import glob
 import os
+import sys
 from setuptools import setup
+from setuptools import Command
+
+import utils.unit_test_runner as unit_test_runner
+
+
+class TestCmd(Command):
+    description = "Run unit tests"
+    user_options = list()
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        sys.exit(unit_test_runner.main())
 
 #############################################################################
 # main
@@ -70,4 +88,5 @@ setup(name=NAME,
    packages=['hadoop_galaxy',
              ],
    scripts=glob.glob("scripts/*"),
+   cmdclass = { 'run_tests' : TestCmd },
 )
