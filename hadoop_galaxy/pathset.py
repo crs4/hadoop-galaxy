@@ -116,7 +116,7 @@ class FilePathset(Pathset):
     self.__parse_header(header)
     self.paths = [ ]
     comments = []
-    for line in fd.xreadlines():
+    for line in fd:
       line = line.rstrip('\n')
       if not line:
         continue # skip blank lines
