@@ -17,7 +17,7 @@ function usage_error() {
 }
 
 function validate_version_format() {
-	local version_text="${0}"
+	local version_text="${1}"
 	# accepts versions with three numbers and optional appendage
 	# e.g., 1.0.0, 1.0.1-devel
 	if ! python -c "import re, sys; sys.exit( 0 if re.match(r'\d+\.\d+\.\d+([-.].+)?$', '${version_text}') else 1)" ; then
@@ -42,7 +42,7 @@ function confirm() {
 }
 
 function update_tool_deps() {
-	local next_version="${0}"
+	local next_version="${1}"
 	printf -v sed_packge_expr  '/<package name="%s"/s/version="[^"]*"/version="%s"/' "${PackageName}" "${next_version}"
 	printf -v sed_git_expr  '/git reset/s/git reset --hard [^<]\+/git reset --hard %s/' "${next_version}"
 
@@ -53,7 +53,7 @@ function update_tool_deps() {
 }
 
 function update_tools() {
-	local next_version="${0}"
+	local next_version="${1}"
 	printf -v sed_expr  '/<tool.*>/s/version="[^"]*"/version="%s"/' "${next_version}"
 	sed -i -e "${sed_expr}" galaxy_wrappers/*.xml
 	echo "Updated tool wrapper versions to ${next_version}"
