@@ -2,7 +2,7 @@
   <description>Concatenate all components of a pathset into a single file.</description>
   <requirements>
     <requirement type="package" version="0.11">pydoop</requirement>
-    <requirement type="package" version="0.1.1">hadoop-galaxy</requirement>
+    <requirement type="package" version="0.1.2">hadoop-galaxy</requirement>
   </requirements>
 
   <command>
