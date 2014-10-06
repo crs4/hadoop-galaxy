@@ -3,11 +3,11 @@
   <package name="pydoop" version="0.11">
     <repository name="package_pydoop_0_11" owner="crs4" prior_installation_required="True" />
   </package>
-  <package name="hadoop-galaxy" version="0.1.2">
+  <package name="hadoop-galaxy" version="0.1.3">
     <install version="1.0">
       <actions>
         <action type="shell_command">git clone https://github.com/crs4/hadoop-galaxy/</action>
-        <action type="shell_command">git reset --hard 0.1.2</action>
+        <action type="shell_command">git reset --hard 0.1.3</action>
         <action type="set_environment_for_install">
           <repository name="package_pydoop_0_11" owner="crs4">
             <package name="pydoop" version="0.11" />
