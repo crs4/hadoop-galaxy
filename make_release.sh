@@ -54,8 +54,11 @@ function update_tool_deps() {
 
 function update_tools() {
 	local next_version="${1}"
-	printf -v sed_expr  '/<tool.*>/s/version="[^"]*"/version="%s"/' "${next_version}"
-	sed -i -e "${sed_expr}" galaxy_wrappers/*.xml
+	# update tool versions
+	printf -v sed_expr1  '/<tool.*>/s/version="[^"]*"/version="%s"/' "${next_version}"
+	# and the requirement tag
+	printf -v sed_expr2  '/<requirement type="package".*>\s*hadoop-galaxy\s*<\/requirement>/s/version="[^"]*"/version="%s"/' "${next_version}"
+	sed -i -e "${sed_expr1}" -e "${sed_expr2}" galaxy_wrappers/*.xml
 	echo "Updated tool wrapper versions to ${next_version}"
 	return 0
 }
