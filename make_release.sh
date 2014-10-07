@@ -17,28 +17,28 @@ function usage_error() {
 }
 
 function validate_version_format() {
-	local version_text="${1}"
-	# accepts versions with three numbers and optional appendage
-	# e.g., 1.0.0, 1.0.1-devel
-	if ! python -c "import re, sys; sys.exit( 0 if re.match(r'\d+\.\d+\.\d+([-.].+)?$', '${version_text}') else 1)" ; then
-			error "Please use a version name that of the form X.Y.Z"
-	fi
-	return 0
+    local version_text="${1}"
+    # accepts versions with three numbers and optional appendage
+    # e.g., 1.0.0, 1.0.1-devel
+    if ! python -c "import re, sys; sys.exit( 0 if re.match(r'\d+\.\d+\.\d+([-.].+)?$', '${version_text}') else 1)" ; then
+        error "Please use a version name that of the form X.Y.Z"
+    fi
+    return 0
 }
 
 function confirm() {
-	local prompt="${1}"
-	echo "${prompt} [Y/n]"
-	read -p "Answer: " yn
-	case "${yn}" in
-			''|[Yy]) # do nothing and keep going
-					;;
-			[Nn]) echo "Aborting"; exit 0
-					;;
-			*) usage_error "Unrecognized answer. Please specify Y or n"
-					;;
-	esac
-	return 0
+    local prompt="${1}"
+    echo "${prompt} [Y/n]"
+    read -p "Answer: " yn
+    case "${yn}" in
+        ''|[Yy]) # do nothing and keep going
+            ;;
+        [Nn]) echo "Aborting"; exit 0
+            ;;
+        *) usage_error "Unrecognized answer. Please specify Y or n"
+            ;;
+    esac
+    return 0
 }
 
 function update_tool_deps() {
@@ -53,18 +53,18 @@ function update_tool_deps() {
 }
 
 function update_tools() {
-	local next_version="${1}"
-	# update tool versions
-	printf -v sed_expr1  '/<tool.*>/s/version="[^"]*"/version="%s"/' "${next_version}"
-	# and the requirement tag
-	printf -v sed_expr2  '/<requirement type="package".*>\s*hadoop-galaxy\s*<\/requirement>/s/version="[^"]*"/version="%s"/' "${next_version}"
-	sed -i -e "${sed_expr1}" -e "${sed_expr2}" galaxy_wrappers/*.xml
-	echo "Updated tool wrapper versions to ${next_version}"
-	return 0
+    local next_version="${1}"
+    # update tool versions
+    printf -v sed_expr1  '/<tool.*>/s/version="[^"]*"/version="%s"/' "${next_version}"
+    # and the requirement tag
+    printf -v sed_expr2  '/<requirement type="package".*>\s*hadoop-galaxy\s*<\/requirement>/s/version="[^"]*"/version="%s"/' "${next_version}"
+    sed -i -e "${sed_expr1}" -e "${sed_expr2}" galaxy_wrappers/*.xml
+    echo "Updated tool wrapper versions to ${next_version}"
+    return 0
 }
 
 function update_setup() {
-	local next_version="${1}"
+    local next_version="${1}"
     sed -i -e "/^\s*version=.*,/s/version=.*,/version='${next_version}',/" setup.py
     return 0
 }
@@ -72,7 +72,7 @@ function update_setup() {
 #### main ####
 
 if [ $# -ne 1 ]; then
-	usage_error
+    usage_error
 fi
 
 next_version="${1}"
