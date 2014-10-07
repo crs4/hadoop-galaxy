@@ -71,7 +71,9 @@ MAINTAINER = ", ".join(t[0] for t in MAINTAINER_INFO)
 MAINTAINER_EMAIL = ", ".join("<%s>" % t[1] for t in MAINTAINER_INFO)
 
 
-setup(name=NAME,
+setup(
+   version="dev",
+   name=NAME,
    description=DESCRIPTION,
    long_description=LONG_DESCRIPTION,
    url=URL,

@@ -63,6 +63,12 @@ function update_tools() {
 	return 0
 }
 
+function update_setup() {
+	local next_version="${1}"
+    sed -i -e "/^\s*version=.*,/s/version=.*,/version='${next_version}',/" setup.py
+    return 0
+}
+
 #### main ####
 
 if [ $# -ne 1 ]; then
@@ -84,6 +90,7 @@ echo "Going forward with release '${next_version}'"
 
 update_tool_deps "${next_version}"
 update_tools "${next_version}"
+update_setup "${next_version}"
 
 git add galaxy_wrappers/*.xml
 git commit -m "Release '${next_version}'"
