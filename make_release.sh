@@ -92,7 +92,7 @@ update_tool_deps "${next_version}"
 update_tools "${next_version}"
 update_setup "${next_version}"
 
-git add galaxy_wrappers/*.xml
+git add galaxy_wrappers/*.xml setup.py
 git commit -m "Release '${next_version}'"
 git tag "${next_version}"
 
