@@ -72,7 +72,7 @@ MAINTAINER_EMAIL = ", ".join("<%s>" % t[1] for t in MAINTAINER_INFO)
 
 
 setup(
-   version="dev",
+   version='0.1.4',
    name=NAME,
    description=DESCRIPTION,
    long_description=LONG_DESCRIPTION,

@@ -1,8 +1,8 @@
-<tool id="hadoop_galaxy_put_dataset" name="Put dataset" version="0.1.3">
+<tool id="hadoop_galaxy_put_dataset" name="Put dataset" version="0.1.4">
   <description>Copy data from Galaxy storage to Hadoop storage.</description>
   <requirements>
     <requirement type="package" version="0.11">pydoop</requirement>
-    <requirement type="package" version="0.1.3">hadoop-galaxy</requirement>
+    <requirement type="package" version="0.1.4">hadoop-galaxy</requirement>
   </requirements>
 
   <command>
