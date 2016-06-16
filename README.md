@@ -257,6 +257,10 @@ intermediate steps in our pipeline, we don't permanently store any of its
 output.  So, we write this data to a temporary storage space.  From time to
 time, we stop the pipeline and remove the entire contents.
 
+Citing
+-------------
+
+If you  publish work that uses Hadoop-Galaxy, please cite the [Hadoop-Galaxy article](http://dl.acm.org/citation.cfm?id=2649387.2649429).
 
 Authors
 -------------
